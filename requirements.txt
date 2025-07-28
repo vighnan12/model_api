@@ -1,5 +1,5 @@
 tensorflow==2.10.0
 flask
+gunicorn
 numpy
 Pillow
-gunicorn
