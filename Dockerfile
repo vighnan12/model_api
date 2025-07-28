@@ -1,18 +1,24 @@
-# Use official Python base image (compatible with TensorFlow)
-FROM python:3.10-slim
+FROM python:3.10.7-slim
+
+# Prevent Python from writing .pyc files and buffering stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # Set working directory
 WORKDIR /app
 
-# Copy all files into the container
+# Install dependencies
+COPY requirements.txt .
+RUN apt-get update && apt-get install -y gcc \
+    && pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && apt-get remove -y gcc && apt-get autoremove -y
+
+# Copy app files
 COPY . .
 
-# Install dependencies
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-
-# Expose the port Flask will run on
+# Expose port
 EXPOSE 5000
 
-# Run the application
-CMD ["python", "app.py"]
+# Start the app using gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
