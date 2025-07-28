@@ -5,15 +5,14 @@ import numpy as np
 import os
 import io
 
-
 # Initialize Flask app
 app = Flask(__name__)
 
-# Load your trained model
+# Load model
 MODEL_PATH = "plant_disease_model_updated.h5"
 model = load_model(MODEL_PATH)
 
-# Define class labels (Potato removed)
+# Class labels (potato removed)
 class_labels = [
     "Corn___Common_rust",
     "Corn___Gray_leaf_spot",
@@ -28,7 +27,7 @@ class_labels = [
     "Wheat___Yellow_rust"
 ]
 
-# Image preprocessing function
+# Preprocess the input image
 def preprocess_image(image, target_size=(224, 224)):
     image = image.resize(target_size)
     image = img_to_array(image)
@@ -36,7 +35,7 @@ def preprocess_image(image, target_size=(224, 224)):
     image = np.expand_dims(image, axis=0)
     return image
 
-# Prediction endpoint
+# Prediction route
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'image' not in request.files:
@@ -47,8 +46,7 @@ def predict():
         return jsonify({'status': 'fail', 'error': 'Empty filename'}), 400
 
     try:
-        import io
-        image_bytes = file.read()  # Read raw bytes
+        image_bytes = file.read()
         image = load_img(io.BytesIO(image_bytes), target_size=(224, 224))
         processed_image = preprocess_image(image)
         prediction = model.predict(processed_image)[0]
@@ -63,6 +61,7 @@ def predict():
     except Exception as e:
         return jsonify({'status': 'fail', 'error': str(e)}), 500
 
-# Run the app locally
+# Start app (compatible with Render)
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
