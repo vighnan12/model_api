@@ -1,12 +1,14 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
 import numpy as np
-import os
 import io
+import os
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Load model
 MODEL_PATH = "plant_disease_model_updated.h5"
@@ -61,7 +63,7 @@ def predict():
     except Exception as e:
         return jsonify({'status': 'fail', 'error': str(e)}), 500
 
-# Start app (compatible with Render)
+# Start app (for local or Render deployment)
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
